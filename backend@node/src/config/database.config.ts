@@ -11,7 +11,12 @@ if (!MONGO_URI) {
 mongoose.set('strictQuery', true);
 
 export async function connectDatabase() {
-  return mongoose.connect(MONGO_URI, {
-    dbName: 'kisansathi',
-  });
+  try {
+    await mongoose.connect(MONGO_URI, {
+      dbName: 'kisansathi',
+    });
+    console.log('MongoDB connected successfully');
+  } catch (error) {
+    console.error('MongoDB connection failed, server will run without database:', error);
+  }
 }

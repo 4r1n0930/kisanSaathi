@@ -6,7 +6,8 @@
   "scripts": {
     "build": "tsc",
     "start": "node dist/main.js",
-    "dev": "ts-node-dev --respawn --transpile-only main.ts"
+    "dev": "ts-node-dev --respawn --transpile-only main.ts",
+    "seed:crops": "ts-node src/crops/seed-crops.ts"
   },
   "dependencies": {
     "bcrypt": "^5.1.0",
@@ -14,6 +15,7 @@
     "cors": "^2.8.5",
     "dotenv": "^16.1.4",
     "express": "^4.18.2",
+    "axios": "^1.6.4",
     "helmet": "^7.0.0",
     "jsonwebtoken": "^9.0.0",
     "mongoose": "^7.5.1",

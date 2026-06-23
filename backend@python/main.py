@@ -24,7 +24,7 @@ def home():
     return {"message": "Grain analyzer running"}
 
 
-@app.post("/analyze-grain")
+
 @app.post("/analyze-grain")
 async def analyze_grain(
 
@@ -99,6 +99,48 @@ Do not estimate invisible properties.
                 "location": location,
                 "images_uploaded": len(images),
                 "ai_quality": response.text,
+            }
+        }
+    )
+    @app.post("/verify-trader")
+    async def verify_trader(images: List[UploadFile] = File(...)
+
+):
+    uploaded_images = []
+
+    gemini_image_payload = []
+
+    for image in images:
+        image_bytes = await image.read()
+        img = Image.open(io.BytesIO(image_bytes))
+        gemini_image_payload.append(img)
+
+    prompt = """
+You are a grain quality inspector.
+Analyze the provided images of trader and verify that the trader is genuine.
+Judge only visible things:
+- trader's identity
+- trader's authenticity
+Return ONLY valid JSON matching this schema exactly. Do not wrap it in markdown code blocks like ```json:
+{
+  "is_genuine": false,
+  "issues": [],
+  "verification_note": ""
+}
+Do not estimate invisible properties.
+"""
+     contents = [prompt] + gemini_image_payload
+
+    # Send data to Gemini
+    response = model.generate_content(contents)
+
+    # Return the clean final structured JSON response
+    return JSONResponse(
+        content={
+            "verification": {
+                "is_genuine": False,
+                "issues": [],
+                "verification_note": ""
             }
         }
     )
