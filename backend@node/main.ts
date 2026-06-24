@@ -12,6 +12,8 @@ import voiceRoutes from './src/voice/voice.routes';
 import cropRoutes from './src/crops/crop.controller';
 import bidRoutes from './src/bidding/bid.controller';
 import marketRoutes from './src/market/market.controller';
+import contractRoutes from './src/contracts/contract.controller';
+import inspectionRoutes from './src/inspection/inspection.controller';
 
 dotenv.config();
 
@@ -30,6 +32,8 @@ app.use('/voice', voiceRoutes);
 app.use('/crops', cropRoutes);
 app.use('/bid', bidRoutes);
 app.use('/market', marketRoutes);
+app.use('/contracts', contractRoutes);
+app.use('/inspections', inspectionRoutes);
 
 app.get('/', (_req, res) => res.json({ status: 'OK', message: 'KisanSaathi backend is running' }));
 

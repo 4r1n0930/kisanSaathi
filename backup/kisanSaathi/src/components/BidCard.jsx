@@ -1,12 +1,15 @@
 import React from 'react';
-import { View, Text, Image, StyleSheet } from 'react-native';
+import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
+import StatusBadge from './StatusBadge';
 
-export default function BidCard({ bid }) {
+export default function BidCard({ bid, onPress }) {
   const cropName = bid.crop?.cropName || 'अज्ञात फसल';
   const cropImage = bid.crop?.images?.[0];
+  const Container = onPress ? TouchableOpacity : View;
+  const touchProps = onPress ? { onPress, activeOpacity: 0.7 } : {};
 
   return (
-    <View style={styles.card}>
+    <Container style={styles.card} {...touchProps}>
       {cropImage ? (
         <Image source={{ uri: cropImage }} style={styles.image} />
       ) : (
@@ -18,9 +21,9 @@ export default function BidCard({ bid }) {
         <Text style={styles.name}>{cropName}</Text>
         <Text>आपका प्रस्ताव: ₹{bid.price}</Text>
         <Text>मात्रा: {bid.quantity}</Text>
-        <Text>स्थिति: {bid.status}</Text>
+        <StatusBadge status={bid.status} />
       </View>
-    </View>
+    </Container>
   );
 }
 

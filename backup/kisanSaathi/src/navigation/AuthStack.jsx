@@ -14,6 +14,10 @@ import SearchCropsScreen from '../screens/SearchCropsScreen';
 import CreateBidScreen from '../screens/CreateBidScreen';
 import MarketPriceScreen from '../screens/MarketPriceScreen';
 import MyBidsScreen from '../screens/MyBidsScreen';
+import FarmerMyBidsScreen from '../screens/FarmerMyBidsScreen';
+import BidDetailsScreen from '../screens/BidDetailsScreen';
+import ContractDetailsScreen from '../screens/ContractDetailsScreen';
+import UploadInspectionScreen from '../screens/UploadInspectionScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -34,6 +38,10 @@ const AuthStack = () => {
         <Stack.Screen name="TraderRegistration" component={TraderRegistrationScreen} />
         <Stack.Screen name="InspectorRegistration" component={InspectorRegistrationScreen} />
         <Stack.Screen name="Login" component={LoginScreen} />
+        <Stack.Screen name="FarmerMyBids" component={FarmerMyBidsScreen} />
+        <Stack.Screen name="BidDetails" component={BidDetailsScreen} />
+        <Stack.Screen name="ContractDetails" component={ContractDetailsScreen} />
+        <Stack.Screen name="UploadInspection" component={UploadInspectionScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

@@ -1,6 +1,6 @@
 import { Platform } from 'react-native';
 
-const DEVICE_IP = "192.168.1.191";
+const DEVICE_IP = "10.104.209.172";
 
 const getBaseUrl = () => {
   if (DEVICE_IP) {

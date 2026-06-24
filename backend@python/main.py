@@ -1,22 +1,29 @@
 import io
+import json
 import os
+import re
 from typing import List
-from typing_extensions import Annotated  # Use standard typing if on Python 3.9+
+from urllib.request import urlopen
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, UploadFile, File, Form
+from fastapi import FastAPI
 from fastapi.responses import JSONResponse
+from pydantic import BaseModel
 import google.generativeai as genai
 from PIL import Image
 
-# Load environment variables
 load_dotenv()
 
-# Gemini configuration
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 model = genai.GenerativeModel("gemini-2.5-flash")
 
 app = FastAPI()
+
+
+class AnalyzeCropRequest(BaseModel):
+    crop: str
+    images: List[str]
+    location: str = ""
 
 
 @app.get("/")
@@ -24,51 +31,30 @@ def home():
     return {"message": "Grain analyzer running"}
 
 
-
-@app.post("/analyze-grain")
-async def analyze_grain(
-
-    crop_name: str = Form(...),
-
-    variety: str = Form(...),
-
-    location: str = Form(...),
-
-    images: List[UploadFile] = File(...)
-
-):
-
-    uploaded_images = []
-
-    gemini_image_payload = []
+def _download_image(url: str) -> Image.Image:
+    with urlopen(url, timeout=30) as resp:
+        return Image.open(io.BytesIO(resp.read()))
 
 
-    for image in images:
-
-        image_bytes = await image.read()
-
-        img = Image.open(
-            io.BytesIO(image_bytes)
-        )
+def _parse_gemini_json(text: str) -> dict:
+    match = re.search(r"\{.*\}", text, re.DOTALL)
+    if match:
+        return json.loads(match.group())
+    return {"quality_grade": "N/A", "quality_score": 0, "issues": [], "buyer_note": "Could not parse AI output"}
 
 
-        gemini_image_payload.append(img)
-
-
-    
-    prompt = f"""
+ANALYSIS_PROMPT = """
 You are a grain quality inspector.
 Analyze the provided images of harvested grains.
 
 Farmer details:
 Crop: {crop_name}
-Variety: {variety}
 
 Give a simple market quality assessment.
-Return ONLY valid JSON matching this schema exactly. Do not wrap it in markdown code blocks like ```json:
+Return ONLY valid JSON matching this schema exactly:
 {{
   "quality_grade": "",
-  "quality_score": "",
+  "quality_score": 0,
   "issues": [],
   "buyer_note": ""
 }}
@@ -84,63 +70,38 @@ Judge only visible things:
 Do not estimate invisible properties.
 """
 
-    # Combine the text prompt and the list of formatted images
-    contents = [prompt] + gemini_image_payload
 
-    # Send data to Gemini
+@app.post("/analyze-crop")
+async def analyze_crop(req: AnalyzeCropRequest):
+    gemini_images = []
+    for url in req.images:
+        try:
+            gemini_images.append(_download_image(url))
+        except Exception:
+            pass
+
+    if not gemini_images:
+        return JSONResponse(
+            content={
+                "qualityGrade": "N/A",
+                "qualityScore": 0,
+                "issues": ["Could not download any images"],
+                "buyerNote": "Failed to load images for analysis",
+            }
+        )
+
+    prompt = ANALYSIS_PROMPT.format(crop_name=req.crop)
+    contents = [prompt] + gemini_images
     response = model.generate_content(contents)
 
-    # Return the clean final structured JSON response
-    return JSONResponse(
-        content={
-            "listing": {
-                "crop_name": crop_name,
-                "variety": variety,
-                "location": location,
-                "images_uploaded": len(images),
-                "ai_quality": response.text,
-            }
-        }
-    )
-    @app.post("/verify-trader")
-    async def verify_trader(images: List[UploadFile] = File(...)
+    try:
+        parsed = _parse_gemini_json(response.text)
+    except Exception:
+        parsed = {"quality_grade": "N/A", "quality_score": 0, "issues": [], "buyer_note": "AI parse error"}
 
-):
-    uploaded_images = []
-
-    gemini_image_payload = []
-
-    for image in images:
-        image_bytes = await image.read()
-        img = Image.open(io.BytesIO(image_bytes))
-        gemini_image_payload.append(img)
-
-    prompt = """
-You are a grain quality inspector.
-Analyze the provided images of trader and verify that the trader is genuine.
-Judge only visible things:
-- trader's identity
-- trader's authenticity
-Return ONLY valid JSON matching this schema exactly. Do not wrap it in markdown code blocks like ```json:
-{
-  "is_genuine": false,
-  "issues": [],
-  "verification_note": ""
-}
-Do not estimate invisible properties.
-"""
-     contents = [prompt] + gemini_image_payload
-
-    # Send data to Gemini
-    response = model.generate_content(contents)
-
-    # Return the clean final structured JSON response
-    return JSONResponse(
-        content={
-            "verification": {
-                "is_genuine": False,
-                "issues": [],
-                "verification_note": ""
-            }
-        }
-    )
+    return JSONResponse(content={
+        "qualityGrade": parsed.get("quality_grade", "N/A"),
+        "qualityScore": parsed.get("quality_score", 0),
+        "issues": parsed.get("issues", []),
+        "buyerNote": parsed.get("buyer_note", ""),
+    })

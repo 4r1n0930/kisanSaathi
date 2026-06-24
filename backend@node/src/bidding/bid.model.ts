@@ -5,7 +5,7 @@ export interface IBid extends Document {
   traderId: string;
   price: number;
   quantity: string;
-  status: 'PENDING' | 'ACCEPTED' | 'REJECTED';
+  status: 'ACTIVE' | 'SELECTED' | 'ACCEPTED' | 'REJECTED';
   createdAt: Date;
 }
 
@@ -14,7 +14,7 @@ const BidSchema = new Schema<IBid>({
   traderId: { type: String, required: true },
   price: { type: Number, required: true },
   quantity: { type: String, required: true },
-  status: { type: String, default: 'PENDING', enum: ['PENDING', 'ACCEPTED', 'REJECTED'] },
+  status: { type: String, default: 'ACTIVE', enum: ['ACTIVE', 'SELECTED', 'ACCEPTED', 'REJECTED'] },
   createdAt: { type: Date, default: () => new Date() },
 });
 

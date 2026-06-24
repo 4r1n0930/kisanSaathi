@@ -26,4 +26,17 @@ router.get('/my-bids', async (req: Request, res: Response, next: NextFunction) =
   }
 });
 
+router.get('/received', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const farmerId = req.query.farmerId as string;
+    if (!farmerId) {
+      return res.status(400).json({ message: 'farmerId is required' });
+    }
+    const bids = await BidService.findByFarmer(farmerId);
+    return res.json(bids);
+  } catch (error) {
+    next(error);
+  }
+});
+
 export default router;

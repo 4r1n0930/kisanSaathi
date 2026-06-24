@@ -8,7 +8,7 @@ export default function InspectorDashboardScreen({ navigation }) {
       <Text style={styles.header}>Welcome, Inspector</Text>
       <Text style={styles.sub}>निरीक्षक</Text>
 
-      <DashboardCard title="Pending Inspections" description="Review and verify crop listings" icon="🔍" onPress={() => {}} />
+      <DashboardCard title="New Inspection" description="Capture verification photos with camera" icon="📷" onPress={() => navigation.navigate('UploadInspection')} />
       <DashboardCard title="Market Prices" description="Check current mandi rates" icon="📈" onPress={() => navigation.navigate('MarketPrice')} />
       <DashboardCard title="Reports" description="View inspection reports" icon="📄" onPress={() => {}} />
     </ScrollView>

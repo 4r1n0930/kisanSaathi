@@ -37,7 +37,7 @@ export async function uploadCropImages(files) {
 }
 
 export async function createCropListing(payload) {
-  const response = await api.post('/crops/create', payload);
+  const response = await api.post('/crops/create', payload, { timeout: 120000 });
   return response.data;
 }
 
